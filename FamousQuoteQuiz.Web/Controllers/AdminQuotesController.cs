@@ -10,16 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace FamousQuoteQuiz.Web.Controllers
 {
     [Authorize(Roles = AuthConstants.AdminRole)]
-    public class AdminQuotesController : Controller
+    public class AdminQuotesController(IMediator mediator) : Controller
     {
-        private readonly IMediator _mediator;
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         private const int PageSize = 10;
         private const string DefaultSortColumn = "Id";
-
-        public AdminQuotesController(IMediator mediator)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        }
 
         #region List
 

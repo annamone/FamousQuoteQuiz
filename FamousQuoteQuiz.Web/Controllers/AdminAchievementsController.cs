@@ -7,16 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace FamousQuoteQuiz.Web.Controllers
 {
     [Authorize(Roles = AuthConstants.AdminRole)]
-    public class AdminAchievementsController : Controller
+    public class AdminAchievementsController(IMediator mediator) : Controller
     {
-        private readonly IMediator _mediator;
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         private const int PageSize = 10;
         private const string DefaultSortColumn = "StartedAt";
-
-        public AdminAchievementsController(IMediator mediator)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        }
 
         public async Task<IActionResult> Index(
             string? userSearch,

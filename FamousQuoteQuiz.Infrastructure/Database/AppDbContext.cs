@@ -15,31 +15,16 @@ namespace FamousQuoteQuiz.Infrastructure.Database
             const string guestEmail = "guest@email";
             const string adminEmail = "admin@email";
 
-            var guestPasswordHash = BCrypt.Net.BCrypt.HashPassword("password");
-            var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin");
-
             if (!await context.Users.AnyAsync(u => u.Email == guestEmail))
             {
+                var guestPasswordHash = BCrypt.Net.BCrypt.HashPassword("password");
                 context.Users.Add(new User { UserName = "Guest", Email = guestEmail, IsActive = true, PasswordHash = guestPasswordHash });
             }
-            else
-            {
-                var guestUser = await context.Users.FirstOrDefaultAsync(u => u.Email == guestEmail);
-                if (guestUser != null && string.IsNullOrEmpty(guestUser.PasswordHash))
-                    guestUser.PasswordHash = guestPasswordHash;
-            }
+
             if (!await context.Users.AnyAsync(u => u.Email == adminEmail))
             {
+                var adminPasswordHash = BCrypt.Net.BCrypt.HashPassword("admin");
                 context.Users.Add(new User { UserName = "admin", Email = adminEmail, IsActive = true, IsAdmin = true, PasswordHash = adminPasswordHash });
-            }
-            else
-            {
-                var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
-                if (adminUser != null)
-                {
-                    if (!adminUser.IsAdmin) adminUser.IsAdmin = true;
-                    if (string.IsNullOrEmpty(adminUser.PasswordHash)) adminUser.PasswordHash = adminPasswordHash;
-                }
             }
 
             if (!await context.Quotes.AnyAsync())

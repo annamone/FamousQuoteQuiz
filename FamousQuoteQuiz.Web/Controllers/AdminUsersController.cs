@@ -11,18 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace FamousQuoteQuiz.Web.Controllers
 {
     [Authorize(Roles = AuthConstants.AdminRole)]
-    public class AdminUsersController : Controller
+    public class AdminUsersController(IMediator mediator, IPasswordHasher passwordHasher) : Controller
     {
-        private readonly IMediator _mediator;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        private readonly IPasswordHasher _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
         private const int PageSize = 10;
         private const string DefaultSortColumn = "Id";
-
-        public AdminUsersController(IMediator mediator, IPasswordHasher passwordHasher)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-        }
 
         #region List
 

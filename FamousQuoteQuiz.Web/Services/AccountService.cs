@@ -5,16 +5,10 @@ using FamousQuoteQuiz.Web.Services.Interfaces;
 
 namespace FamousQuoteQuiz.Web.Services
 {
-    public class AccountService : IAccountService
+    public class AccountService(IUserRepository userRepository, IPasswordHasher passwordHasher) : IAccountService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher _passwordHasher;
-
-        public AccountService(IUserRepository userRepository, IPasswordHasher passwordHasher)
-        {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
-        }
+        private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        private readonly IPasswordHasher _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
 
         public async Task<User?> AuthenticateAsync(string email, string password)
         {

@@ -13,9 +13,9 @@ namespace FamousQuoteQuiz.Web.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, userName),
-                new Claim(ClaimTypes.Role, GetUserRole(isAdmin))
+                new(ClaimTypes.NameIdentifier, userId.ToString()),
+                new(ClaimTypes.Name, userName),
+                new(ClaimTypes.Role, GetUserRole(isAdmin))
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

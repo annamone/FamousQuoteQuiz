@@ -3,15 +3,10 @@ using System.Security.Claims;
 
 namespace FamousQuoteQuiz.Web.Services
 {
-    public class CurrentUserService : ICurrentUserService
+    public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         private const string AdminRole = "Admin";
-
-        public CurrentUserService(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-        }
 
         public int? GetUserId()
         {

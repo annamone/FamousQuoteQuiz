@@ -9,21 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 namespace FamousQuoteQuiz.Web.Controllers
 {
     [AllowAnonymous]
-    public class AccountController : Controller
+    public class AccountController(
+        IAccountService accountService,
+        IUserClaimsService userClaimsService,
+        ICurrentUserService currentUserService) : Controller
     {
-        private readonly IAccountService _accountService;
-        private readonly IUserClaimsService _userClaimsService;
-        private readonly ICurrentUserService _currentUserService;
-
-        public AccountController(
-            IAccountService accountService,
-            IUserClaimsService userClaimsService,
-            ICurrentUserService currentUserService)
-        {
-            _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
-            _userClaimsService = userClaimsService ?? throw new ArgumentNullException(nameof(userClaimsService));
-            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        }
+        private readonly IAccountService _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
+        private readonly IUserClaimsService _userClaimsService = userClaimsService ?? throw new ArgumentNullException(nameof(userClaimsService));
+        private readonly ICurrentUserService _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
 
         #region Login
 

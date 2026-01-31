@@ -9,16 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FamousQuoteQuiz.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(IMediator mediator, ICurrentUserService currentUserService) : Controller
     {
-        private readonly IMediator _mediator;
-        private readonly ICurrentUserService _currentUserService;
-
-        public HomeController(IMediator mediator, ICurrentUserService currentUserService)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        }
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        private readonly ICurrentUserService _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
 
         #region Views
 
