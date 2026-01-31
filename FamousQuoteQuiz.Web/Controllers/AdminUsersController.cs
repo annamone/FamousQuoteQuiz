@@ -5,16 +5,19 @@ using FamousQuoteQuiz.Web.Constants;
 using FamousQuoteQuiz.Web.Models;
 using FamousQuoteQuiz.Web.Services.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FamousQuoteQuiz.Web.Controllers
 {
     [Authorize(Roles = AuthConstants.AdminRole)]
-    public class AdminUsersController(IMediator mediator, IPasswordHasher passwordHasher) : Controller
+    public class AdminUsersController(IMediator mediator, IPasswordHasher passwordHasher, ICurrentUserService currentUserService) : Controller
     {
         private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         private readonly IPasswordHasher _passwordHasher = passwordHasher ?? throw new ArgumentNullException(nameof(passwordHasher));
+        private readonly ICurrentUserService _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         private const int PageSize = 10;
         private const string DefaultSortColumn = "Id";
 
@@ -97,9 +100,21 @@ namespace FamousQuoteQuiz.Web.Controllers
             var user = await GetUserOrNotFoundAsync(id);
             if (user == null) return NotFound();
 
+            // Track if admin status changed
+            var adminStatusChanged = user.IsAdmin != model.IsAdmin;
+            var isEditingCurrentUser = _currentUserService.GetUserId() == id;
+
             UpdateUserFromModel(user, model);
 
             await _mediator.Send(new UpdateUserCommand(user));
+
+            // If the edited user is currently logged in and their admin status changed, sign them out
+            if (isEditingCurrentUser && adminStatusChanged)
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                TempData["Message"] = "Your admin status has been changed. Please log in again.";
+                return RedirectToAction("Login", "Account");
+            }
 
             return RedirectToAction(nameof(Index));
         }
