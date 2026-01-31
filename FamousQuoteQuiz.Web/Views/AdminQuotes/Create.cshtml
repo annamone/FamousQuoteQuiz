@@ -1,0 +1,27 @@
+@model FamousQuoteQuiz.Web.Models.QuoteViewModel
+@{
+    ViewData["Title"] = "Create quote";
+}
+
+<h1 class="mb-4">Create quote</h1>
+
+<form method="post" asp-action="Create">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    
+    <div class="mb-3">
+        <label asp-for="Text" class="form-label"></label>
+        <textarea asp-for="Text" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Text" class="text-danger"></span>
+    </div>
+    
+    <div class="mb-3">
+        <label asp-for="Author" class="form-label"></label>
+        <input asp-for="Author" class="form-control" />
+        <span asp-validation-for="Author" class="text-danger"></span>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,49 @@
+@model FamousQuoteQuiz.Web.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Sign up";
+}
+
+<div class="py-5">
+    <h1 class="mb-4">Sign up</h1>
+    <p class="text-muted">Create an account to play the quiz and track your game sessions.</p>
+
+    <form method="post" asp-controller="Account" asp-action="Register" class="card shadow-sm" style="max-width: 24rem;">
+        <div class="card-body">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+            
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control" autocomplete="username" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" autocomplete="email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+                <span class="form-text">At least 6 characters.</span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Sign up</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </div>
+    </form>
+    <p class="text-muted small mt-2">Already have an account? <a asp-controller="Account" asp-action="Login">Sign in</a>.</p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

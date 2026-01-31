@@ -1,0 +1,179 @@
+@using FamousQuoteQuiz.Application.Queries.Achievements
+@model IEnumerable<GameSessionDto>
+@{
+    ViewData["Title"] = "User achievements";
+    var userSearch = ViewBag.UserSearch as string;
+    var sortBy = ViewBag.SortBy as string ?? "StartedAt";
+    var sortDesc = (bool)ViewBag.SortDesc;
+    var page = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalCount = (int)ViewBag.TotalCount;
+}
+
+<h1 class="mb-4">User achievements</h1>
+<p class="text-muted">Quick overview of user game sessions and their performance.</p>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-auto">
+        <label class="form-label">Search by user</label>
+        <input type="text" name="userSearch" value="@userSearch" class="form-control" placeholder="Name or email" style="min-width: 250px;" />
+    </div>
+    <input type="hidden" name="sortBy" value="@sortBy" />
+    <input type="hidden" name="sortDesc" value="@sortDesc" />
+    <div class="col-auto d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(userSearch))
+    {
+        <div class="col-auto d-flex align-items-end">
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    }
+</form>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-4">
+    @foreach (var s in Model)
+    {
+        var totalAnswers = s.Answers?.Count ?? 0;
+        var correctAnswers = s.Answers?.Count(a => a.IsCorrect) ?? 0;
+        var scorePercent = totalAnswers > 0 ? (int)Math.Round((correctAnswers / (double)totalAnswers) * 100) : 0;
+        var scoreClass = scorePercent >= 80 ? "success" : scorePercent >= 50 ? "warning" : "danger";
+        
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">@s.UserName</h5>
+                            <p class="text-muted small mb-0">
+                                Session #@s.SessionId · 
+                                <span class="badge bg-info">@(s.GameMode == FamousQuoteQuiz.Domain.Enums.GameMode.Binary ? "Yes/No Mode" : "Multiple Choice")</span>
+                            </p>
+                        </div>
+                        @if (totalAnswers > 0)
+                        {
+                            <span class="badge bg-@scoreClass fs-6">@scorePercent%</span>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span>📅 @s.StartedAt.ToString("MMM d, yyyy HH:mm")</span>
+                        </div>
+                        
+                        @if (totalAnswers > 0)
+                        {
+                            <div class="d-flex gap-3 mb-2">
+                                <span class="badge bg-light text-dark">
+                                    <strong>@totalAnswers</strong> questions
+                                </span>
+                                <span class="badge bg-success-subtle text-success">
+                                    ✓ @correctAnswers correct
+                                </span>
+                                <span class="badge bg-danger-subtle text-danger">
+                                    ✗ @(totalAnswers - correctAnswers) wrong
+                                </span>
+                            </div>
+                            
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-@scoreClass" role="progressbar" style="width: @scorePercent%" 
+                                     aria-valuenow="@scorePercent" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted small">No answers recorded</span>
+                        }
+                    </div>
+                    
+                    @if (totalAnswers > 0)
+                    {
+                        <button class="btn btn-sm btn-outline-primary w-100" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#session-@s.SessionId">
+                            View details
+                        </button>
+                        
+                        <div class="collapse mt-3" id="session-@s.SessionId">
+                            <div class="small">
+                                @foreach (var a in s.Answers!)
+                                {
+                                    <div class="border rounded p-2 mb-2 @(a.IsCorrect ? "border-success bg-success-subtle" : "border-danger bg-danger-subtle")">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge @(a.IsCorrect ? "bg-success" : "bg-danger")">
+                                                @(a.IsCorrect ? "✓" : "✗")
+                                            </span>
+                                            <strong class="text-truncate">@(a.QuoteText.Length > 40 ? a.QuoteText.Substring(0, 40) + "…" : a.QuoteText)</strong>
+                                        </div>
+                                        <div class="ms-4 small">
+                                            @* Binary mode (Yes/No): Only show quote and correct/wrong indicator *@
+                                            @if (a.SelectedAnswer.Equals("Yes", StringComparison.OrdinalIgnoreCase) || 
+                                                 a.SelectedAnswer.Equals("No", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                @* No additional details needed - checkmark shows if correct *@
+                                            }
+                                            @* Multiple choice mode: Show correct answer and what user selected if wrong *@
+                                            else
+                                            {
+                                                <div><strong>Correct answer:</strong> @a.CorrectAuthor</div>
+                                                @if (!a.IsCorrect)
+                                                {
+                                                    <div class="text-danger"><strong>User selected:</strong> @a.SelectedAnswer</div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Any())
+{
+    <p class="text-muted">Showing @Model.Count() session(s) · Total: @totalCount</p>
+}
+else
+{
+    <div class="alert alert-info">
+        <strong>No sessions found.</strong> @(string.IsNullOrWhiteSpace(userSearch) ? "There are no game sessions yet." : $"No sessions found for '{userSearch}'.")
+    </div>
+}
+
+@if (totalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center">
+            @if (page > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?userSearch=@userSearch&sortBy=@sortBy&sortDesc=@sortDesc&page=@(page - 1)">Previous</a>
+                </li>
+            }
+            
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                @if (i == 1 || i == totalPages || (i >= page - 2 && i <= page + 2))
+                {
+                    <li class="page-item @(i == page ? "active" : "")">
+                        <a class="page-link" href="?userSearch=@userSearch&sortBy=@sortBy&sortDesc=@sortDesc&page=@i">@i</a>
+                    </li>
+                }
+                else if (i == page - 3 || i == page + 3)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+            }
+            
+            @if (page < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="?userSearch=@userSearch&sortBy=@sortBy&sortDesc=@sortDesc&page=@(page + 1)">Next</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

@@ -1,0 +1,83 @@
+@model IEnumerable<User>
+@{
+    ViewData["Title"] = "Users";
+    var search = ViewBag.Search as string;
+    var isActive = ViewBag.IsActive as bool?;
+    var sortBy = ViewBag.SortBy as string ?? "Id";
+    var sortDesc = (bool)ViewBag.SortDesc;
+    var page = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalCount = (int)ViewBag.TotalCount;
+}
+
+<h1 class="mb-4">User management</h1>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-auto">
+        <input type="text" name="search" value="@search" class="form-control" placeholder="Search by name or email" />
+    </div>
+    <div class="col-auto">
+        <select name="isActive" class="form-select">
+            <option value="">All</option>
+            <option value="true" selected="@(isActive == true)">Active only</option>
+            <option value="false" selected="@(isActive == false)">Disabled only</option>
+        </select>
+    </div>
+    <input type="hidden" name="sortBy" value="@sortBy" />
+    <input type="hidden" name="sortDesc" value="@sortDesc" />
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th><a href="?search=@search&isActive=@isActive&sortBy=Id&sortDesc=@(!sortDesc)&page=@(page)">Id</a></th>
+            <th><a href="?search=@search&isActive=@isActive&sortBy=UserName&sortDesc=@(sortBy=="UserName" && !sortDesc)&page=@(page)">User name</a></th>
+            <th><a href="?search=@search&isActive=@isActive&sortBy=Email&sortDesc=@(sortBy=="Email" && !sortDesc)&page=@(page)">Email</a></th>
+            <th>Active</th>
+            <th>Admin</th>
+            <th><a href="?search=@search&isActive=@isActive&sortBy=CreatedAt&sortDesc=@(sortBy=="CreatedAt" && !sortDesc)&page=@(page)">Created</a></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@u.Id</td>
+                <td>@u.UserName</td>
+                <td>@u.Email</td>
+                <td>@(u.IsActive ? "Yes" : "No")</td>
+                <td>@(u.IsAdmin ? "Yes" : "No")</td>
+                <td>@u.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    @if (u.IsActive)
+                    { <a asp-action="Disable" asp-route-id="@u.Id" class="btn btn-sm btn-outline-warning">Disable</a> }
+                    else
+                    { <a asp-action="Enable" asp-route-id="@u.Id" class="btn btn-sm btn-outline-success">Enable</a> }
+                    <a asp-action="Delete" asp-route-id="@u.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p class="text-muted">Total: @totalCount</p>
+@if (totalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == page ? "active" : "")">
+                    <a class="page-link" href="?search=@search&isActive=@isActive&sortBy=@sortBy&sortDesc=@sortDesc&page=@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<p><a asp-action="Create" class="btn btn-primary">Create user</a></p>

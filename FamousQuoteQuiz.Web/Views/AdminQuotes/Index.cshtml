@@ -1,0 +1,65 @@
+@model IEnumerable<Quote>
+@{
+    ViewData["Title"] = "Quotes";
+    var search = ViewBag.Search as string;
+    var sortBy = ViewBag.SortBy as string ?? "Id";
+    var sortDesc = (bool)ViewBag.SortDesc;
+    var page = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalCount = (int)ViewBag.TotalCount;
+}
+
+<h1 class="mb-4">Quote management</h1>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-auto">
+        <input type="text" name="search" value="@search" class="form-control" placeholder="Search by text or author" />
+    </div>
+    <input type="hidden" name="sortBy" value="@sortBy" />
+    <input type="hidden" name="sortDesc" value="@sortDesc" />
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th><a href="?search=@search&sortBy=Id&sortDesc=@(sortBy=="Id" && !sortDesc)&page=@(page)">Id</a></th>
+            <th><a href="?search=@search&sortBy=Text&sortDesc=@(sortBy=="Text" && !sortDesc)&page=@(page)">Quote</a></th>
+            <th><a href="?search=@search&sortBy=Author&sortDesc=@(sortBy=="Author" && !sortDesc)&page=@(page)">Author</a></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var q in Model)
+        {
+            <tr>
+                <td>@q.Id</td>
+                <td>@(q.Text.Length > 60 ? q.Text.Substring(0, 60) + "…" : q.Text)</td>
+                <td>@q.Author</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@q.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@q.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p class="text-muted">Total: @totalCount</p>
+@if (totalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == page ? "active" : "")">
+                    <a class="page-link" href="?search=@search&sortBy=@sortBy&sortDesc=@sortDesc&page=@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<p><a asp-action="Create" class="btn btn-primary">Create quote</a></p>

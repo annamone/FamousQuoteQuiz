@@ -1,0 +1,213 @@
+@{
+    ViewData["Title"] = "Famous Quote Quiz";
+}
+
+<div class="quiz-container py-5">
+    <h1 class="text-center mb-4">Famous Quote Quiz</h1>
+    <p class="text-center text-muted">Who said it? Pick the author of the quote.</p>
+
+    <div id="please-login" class="alert alert-info mx-auto text-center" style="max-width: 36rem; display: none;">
+        <p class="mb-3 fw-bold">Please log in to play the quiz.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login</a>
+    </div>
+
+    <div id="loading" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading quote...</p>
+    </div>
+
+    <div id="finished-panel" class="card shadow-sm mx-auto text-center py-5" style="max-width: 36rem; display: none;">
+        <div class="card-body">
+            <h2 class="text-success mb-3">🎉 Finished!</h2>
+            <p class="text-muted">You answered all quotes in this round.</p>
+            <button type="button" id="start-new-btn" class="btn btn-primary btn-lg">✨ Start new game</button>
+        </div>
+    </div>
+
+    <div id="quiz-card" class="card shadow-sm mx-auto" style="max-width: 36rem; display: none;">
+        <div class="card-body p-4">
+            <p id="progress-text" class="text-muted small mb-2" style="display: none;"></p>
+            <blockquote class="blockquote mb-4">
+                <p class="fs-5 fst-italic" id="quote-text">"Quote text will appear here."</p>
+            </blockquote>
+
+            <div id="binary-question" class="mb-3" style="display: none;">
+                <p class="mb-3 fw-bold" style="color: #5b4d6b;">Is the author <strong id="binary-author-name"></strong>?</p>
+                <div class="d-flex gap-3">
+                    <button type="button" class="quiz-btn btn btn-lg flex-fill" data-answer="Yes">✨ Yes</button>
+                    <button type="button" class="quiz-btn btn btn-lg flex-fill" data-answer="No">👋 No</button>
+                </div>
+            </div>
+
+            <div id="multiple-options" class="d-grid gap-3" style="display: none;">
+                <button type="button" class="quiz-btn btn btn-lg option-btn" data-answer=""></button>
+                <button type="button" class="quiz-btn btn btn-lg option-btn" data-answer=""></button>
+                <button type="button" class="quiz-btn btn btn-lg option-btn" data-answer=""></button>
+            </div>
+
+            <div id="result-message" class="alert mt-3" style="display: none;" role="alert"></div>
+            <p id="author-display" class="fw-bold mt-2 mb-0" style="display: none;"></p>
+            <div id="next-wrap" class="mt-4" style="display: none;">
+                <a href="#" id="next-btn" class="btn btn-primary btn-lg">Next quote →</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="no-quotes" class="alert alert-warning mx-auto text-center" style="max-width: 36rem; display: none;">
+        <p class="mb-0">No quotes available. Please add quotes in <a asp-controller="Admin" asp-action="Quotes">Admin &rarr; Quotes</a>.</p>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(function () {
+    var currentQuestion = null;
+
+    function updateProgress(answeredCount, totalQuotes) {
+        if (totalQuotes > 0) {
+            var current = answeredCount + 1;
+            $('#progress-text').text('Question ' + current + ' of ' + totalQuotes).show();
+        } else {
+            $('#progress-text').hide();
+        }
+    }
+
+    function loadQuestion() {
+        $('#loading').show();
+        $('#quiz-card').hide();
+        $('#no-quotes').hide();
+        $('#please-login').hide();
+        $('#finished-panel').hide();
+        $('#result-message, #author-display, #next-wrap').hide();
+        $('#binary-question, #multiple-options').hide();
+        $('.option-btn').removeClass('btn-success btn-danger');
+
+        $.get('/Home/GetQuizQuestion')
+            .done(function (data) {
+                if (!data.success) {
+                    $('#loading').hide();
+                    if (data.message && data.message.indexOf('log in') !== -1) {
+                        $('#please-login').show();
+                    } else {
+                        $('#no-quotes').show();
+                    }
+                    return;
+                }
+                if (data.isFinished) {
+                    $('#loading').hide();
+                    $('#finished-panel').show();
+                    return;
+                }
+                currentQuestion = data.question;
+                var answered = data.answeredCount || 0;
+                var total = data.totalQuotes || 0;
+                updateProgress(answered, total);
+                $('#quote-text').text('"' + currentQuestion.quoteText + '"');
+                if (currentQuestion.isBinaryMode) {
+                    $('#binary-author-name').text(currentQuestion.binaryAuthorName || 'Unknown');
+                    $('#binary-question').show();
+                    $('#binary-question button').show().prop('disabled', false);
+                    $('#multiple-options .option-btn').hide();
+                } else {
+                    var opts = currentQuestion.multipleOptions || [];
+                    $('#binary-question').hide();
+                    $('#multiple-options .option-btn').each(function (i) {
+                        var text = opts[i] || '';
+                        $(this).text(text).data('answer', text);
+                        if (text) {
+                            $(this).show().prop('disabled', false).removeClass('btn-success btn-danger');
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                    $('#multiple-options').show();
+                }
+                $('#quiz-card').show();
+                $('#loading').hide();
+            })
+            .fail(function () {
+                $('#no-quotes').show();
+                $('#loading').hide();
+            });
+    }
+
+    function showResult(correct, correctAuthor, clickedAnswer) {
+        var $msg = $('#result-message');
+        $msg.removeClass('alert-success alert-danger');
+        if (correct) {
+            $msg.addClass('alert-success').text('Correct! The right answer is: ' + correctAuthor);
+        } else {
+            $msg.addClass('alert-danger').text('Sorry, you are wrong! The right answer is: ' + correctAuthor);
+        }
+        $msg.show();
+        $('#author-display').text('— ' + correctAuthor).show();
+        $('#next-wrap').show();
+
+        $('#binary-question button').prop('disabled', true);
+        $('#multiple-options .option-btn').prop('disabled', true).each(function () {
+            var ans = $(this).data('answer');
+            $(this).removeClass('btn-outline-primary');
+            // Only show green for correct answer
+            if (ans === correctAuthor) {
+                $(this).addClass('btn-success');
+            }
+            // Only show red for the answer user clicked (if wrong)
+            else if (!correct && ans === clickedAnswer) {
+                $(this).addClass('btn-danger');
+            }
+        });
+    }
+
+    function submitAnswer(answer, displayedAuthor) {
+        if (!currentQuestion) return;
+        $.ajax({
+            url: '/Home/CheckAnswer',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                quoteId: currentQuestion.quoteId,
+                answer: answer,
+                displayedAuthor: displayedAuthor || null
+            }),
+            success: function (data) {
+                showResult(data.correct, data.correctAuthor, answer);
+            },
+            error: function (xhr, status, error) {
+                console.error('Error checking answer:', error);
+                alert('Error checking answer. Please make sure the database is running correctly.');
+            }
+        });
+    }
+
+    function startNewGame() {
+        $.get('/Home/StartNewGame').done(function () {
+            loadQuestion();
+        });
+    }
+
+    $('#binary-question button[data-answer]').on('click', function () {
+        var answer = $(this).data('answer');
+        var displayed = currentQuestion ? currentQuestion.binaryAuthorName : null;
+        submitAnswer(answer, displayed);
+    });
+
+    $('#multiple-options').on('click', '.option-btn', function () {
+        var answer = $(this).data('answer');
+        submitAnswer(answer, null);
+    });
+
+    $('#next-btn').on('click', function (e) {
+        e.preventDefault();
+        loadQuestion();
+    });
+
+    $('#start-new-btn').on('click', function () {
+        startNewGame();
+    });
+
+    loadQuestion();
+});
+</script>
+}
