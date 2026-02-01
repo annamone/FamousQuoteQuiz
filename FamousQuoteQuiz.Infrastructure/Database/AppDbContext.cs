@@ -10,6 +10,7 @@ namespace FamousQuoteQuiz.Infrastructure.Database
         public DbSet<GameSession> GameSessions => Set<GameSession>();
         public DbSet<GameAnswer> GameAnswers => Set<GameAnswer>();
 
+        //Seed Db
         public static async Task SeedAsync(AppDbContext context)
         {
             const string guestEmail = "guest@email";
@@ -30,14 +31,17 @@ namespace FamousQuoteQuiz.Infrastructure.Database
             if (!await context.Quotes.AnyAsync())
             {
                 context.Quotes.AddRange(
-                    new Quote { Text = "The only way to do great work is to love what you do.", Author = "Steve Jobs" },
-                    new Quote { Text = "Innovation distinguishes between a leader and a follower.", Author = "Steve Jobs" },
+                    new Quote { Text = "Be yourself; everyone else is already taken.", Author = "Oscar Wilde" },
+                    new Quote { Text = "It is not our abilities that show what we truly are… it is our choices.", Author = "J. R. R. Tolkien" },
+                    new Quote { Text = "Knowing yourself is the beginning of all wisdom.", Author = "Aristotle" },
                     new Quote { Text = "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.", Author = "Albert Einstein" },
                     new Quote { Text = "Imagination is more important than knowledge.", Author = "Albert Einstein" },
                     new Quote { Text = "Be the change that you wish to see in the world.", Author = "Mahatma Gandhi" },
                     new Quote { Text = "In the middle of difficulty lies opportunity.", Author = "Albert Einstein" },
                     new Quote { Text = "The future belongs to those who believe in the beauty of their dreams.", Author = "Eleanor Roosevelt" },
-                    new Quote { Text = "It is during our darkest moments that we must focus to see the light.", Author = "Aristotle" }
+                    new Quote { Text = "It is during our darkest moments that we must focus to see the light.", Author = "Aristotle" },
+                    new Quote { Text = "A room without books is like a body without a soul.", Author = "Marcus Tullius Cicero" },
+                    new Quote { Text = "Without music, life would be a mistaken.", Author = "Friedrich Nietzsche" }
                 );
             }
 
