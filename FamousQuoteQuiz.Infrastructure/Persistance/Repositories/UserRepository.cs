@@ -50,8 +50,7 @@ namespace FamousQuoteQuiz.Infrastructure.Persistance.Repositories
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.Trim().ToLower();
-                users = users.Where(u => u.UserName.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-                    || u.Email.Contains(term, StringComparison.CurrentCultureIgnoreCase));
+                users = users.Where(u => u.UserName.ToLower().Contains(term) || u.Email.ToLower().Contains(term));
             }
             if (isActive.HasValue)
                 users = users.Where(u => u.IsActive == isActive.Value);
