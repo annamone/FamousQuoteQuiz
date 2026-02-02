@@ -34,8 +34,7 @@ namespace FamousQuoteQuiz.Infrastructure.Persistance.Repositories
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.Trim().ToLower();
-                quotes = quotes.Where(x => x.Text.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-                    || x.Author.Contains(term, StringComparison.CurrentCultureIgnoreCase));
+                quotes = quotes.Where(x => x.Text.ToLower().Contains(term) || x.Author.ToLower().Contains(term));
             }
 
             quotes = sortBy?.ToLowerInvariant() switch
@@ -53,8 +52,7 @@ namespace FamousQuoteQuiz.Infrastructure.Persistance.Repositories
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.Trim().ToLower();
-                quotes = quotes.Where(x => x.Text.Contains(term, StringComparison.CurrentCultureIgnoreCase) ||
-                    x.Author.Contains(term, StringComparison.CurrentCultureIgnoreCase));
+                quotes = quotes.Where(x => x.Text.ToLower().Contains(term) || x.Author.ToLower().Contains(term));
             }
             return await quotes.CountAsync();
         }
